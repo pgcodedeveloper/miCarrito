@@ -85,6 +85,8 @@ const Modal = ({open, setOpen, listas, setListas}) => {
             if(productos.length > 0){
                 setListas([...listas,lista]);
                 setAlerta({mensaje: "Lista agregada correctamente", tipo: "Exito"});
+                console.log("aca");
+                
                 limpiar();
             }
             else{

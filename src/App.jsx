@@ -41,7 +41,13 @@ function App() {
     }
 
     useEffect(() =>{
-        setListas(JSON.parse(window.localStorage.getItem("listas")));
+        if(JSON.parse(window.localStorage.getItem("listas"))){
+            setListas(JSON.parse(window.localStorage.getItem("listas")));
+        }
+        else{
+            setListas([]);
+        }
+        
     },[]);
     
     useEffect(() =>{
