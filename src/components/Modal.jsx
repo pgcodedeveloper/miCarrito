@@ -1,11 +1,19 @@
 import React, { Fragment, useEffect, useState } from 'react'
 import Alerta from './Alerta';
 
-const Modal = ({open, setOpen, listas, setListas}) => {
+const Modal = ({open, setOpen, listas, setListas, listaEdit, setListaEdit}) => {
     const [productos, setProductos] = useState([]);
     const [producto, setProducto] = useState({nombre: "", cantidad: "", estado: "false"});
     const [lista, setLista] = useState({nombre: "", fecha: "", productosL: []});
     const [alerta, setAlerta] = useState({mensaje: "", tipo: ""});
+
+
+    useEffect(() =>{
+        if(listaEdit?.nombre){
+            setLista(listaEdit);
+            setProductos(listaEdit?.productosL);
+        }
+    },[listaEdit]);
 
     const handleChangeP = (e) =>{
         setProducto({...producto,
@@ -76,25 +84,55 @@ const Modal = ({open, setOpen, listas, setListas}) => {
         if(existe){
             const nuevoArray = productos.filter(p => p.nombre !== pr);
             setProductos(nuevoArray);
+            if(listaEdit?.nombre){
+                lista.productosL = nuevoArray;
+            }
         }
     }
 
     const handleAgregarLista = (e) =>{
         e.preventDefault();
-        if(!Object.values(lista).includes("")){    
-            if(productos.length > 0){
-                setListas([...listas,lista]);
-                setAlerta({mensaje: "Lista agregada correctamente", tipo: "Exito"});
-                console.log("aca");
-                
-                limpiar();
+        if(listaEdit?.nombre){
+            if(!Object.values(lista).includes("")){    
+                if(productos.length > 0){
+                    const listaEditada = listas.map(l =>{
+                        //Edito la lista que tiene el mimo nombre
+                        if(l.nombre === lista.nombre){
+                            l.fecha = lista.fecha;
+                            l.productosL = lista.productosL;
+                        }
+                        return l;
+                    });
+                    
+                    setListas(listaEditada);
+                    setAlerta({mensaje: "Lista modificada correctamente", tipo: "Exito"});
+
+                    limpiar();
+                    document.querySelector("#modal").close();
+                }
+                else{
+                    setAlerta({mensaje: "Debes agregar productos a la lista", tipo: "Error"});
+                }
             }
             else{
-                setAlerta({mensaje: "Debes agregar productos a la lista", tipo: "Error"});
+                setAlerta({mensaje: "Debes agregar datos en todos los campos", tipo: "Error"});
             }
         }
         else{
-            setAlerta({mensaje: "Debes agregar datos en todos los campos", tipo: "Error"});
+            if(!Object.values(lista).includes("")){    
+                if(productos.length > 0){
+                    setListas([...listas,lista]);
+                    setAlerta({mensaje: "Lista agregada correctamente", tipo: "Exito"});
+                    console.log("aca");
+                    limpiar();
+                }
+                else{
+                    setAlerta({mensaje: "Debes agregar productos a la lista", tipo: "Error"});
+                }
+            }
+            else{
+                setAlerta({mensaje: "Debes agregar datos en todos los campos", tipo: "Error"});
+            }
         }
     }
 
@@ -103,6 +141,7 @@ const Modal = ({open, setOpen, listas, setListas}) => {
         setAlerta({mensaje: "", tipo : ""});
         setProducto({nombre: "", cantidad: "", estado: "false"});
         setProductos([]); 
+        setListaEdit({});
     }
     useEffect(() =>{
         if(alerta.mensaje !== ""){
@@ -122,6 +161,7 @@ const Modal = ({open, setOpen, listas, setListas}) => {
             setAlerta({mensaje: "", tipo : ""});
             setProducto({nombre: "", cantidad: "", estado: "false"});
             setProductos([]);
+            setListaEdit({});
         }
     },[open]);
 
@@ -132,8 +172,12 @@ const Modal = ({open, setOpen, listas, setListas}) => {
                     <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => setOpen(false)}>✕</button>
                 </form>
                 
-                <h3 className="text-xl text-center uppercase">Nueva lista de la <span className='text-2xl text-primary font-bold italic'>Compra</span></h3>
-                
+                {listaEdit?.nombre ? 
+                    <h3 className="text-xl text-center uppercase">Editar lista de <span className='text-2xl text-primary font-bold italic'>Compra</span></h3>
+                : 
+                    <h3 className="text-xl text-center uppercase">Nueva lista de la <span className='text-2xl text-primary font-bold italic'>Compra</span></h3>
+                }
+
                 {alerta.mensaje !== "" && 
                     <Alerta alerta={alerta}/>
                 }
@@ -141,7 +185,11 @@ const Modal = ({open, setOpen, listas, setListas}) => {
                 <form className='w-full mx-auto' onSubmit={(e) => handleAgregarLista(e)}>
                     <div className='form-control'>
                         <label htmlFor="nombre" className='p-2 font-semibold'>Nombre</label>
-                        <input type="text" name='nombre' value={lista.nombre} onChange={(e) => handleChangeL(e)} id='nombre' placeholder="Ingrese el nombre" className="input input-bordered w-full" />
+                        {listaEdit?.nombre ? 
+                            <input type="text" name='nombre' disabled value={lista.nombre} onChange={(e) => handleChangeL(e)} id='nombre' placeholder="Ingrese el nombre" className="input input-bordered w-full" />
+                        : 
+                            <input type="text" name='nombre' value={lista.nombre} onChange={(e) => handleChangeL(e)} id='nombre' placeholder="Ingrese el nombre" className="input input-bordered w-full" />
+                        }
                     </div>
                     <div className='form-control'>
                         <label htmlFor="fecha" className='p-2 font-semibold'>Fecha</label>
@@ -223,7 +271,7 @@ const Modal = ({open, setOpen, listas, setListas}) => {
                     <div className="divider">Finalizar</div>
 
                     <button type='submit' className="btn btn-success">
-                        Agregar Lista
+                        {listaEdit?.nombre ? "Guardar Cambios" : "Agregar Lista"}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
                             <path fillRule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zM12.75 12a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V18a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V12z" clipRule="evenodd" />
                             <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z" />

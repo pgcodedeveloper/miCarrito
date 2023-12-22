@@ -11,7 +11,7 @@ function App() {
     const [listas, setListas] = useState([]);
     const [alerta, setAlerta] = useState({});
     const [lista, setLista] = useState({});
-
+    const [listaEdit,setListaEdit] = useState({});
 
     const handleNuevaLista = () =>{
         setModal(true);
@@ -20,6 +20,16 @@ function App() {
     const handleMostarLista = (lista) =>{
         setLista(lista);
         setModalLista(true);
+    }
+
+    const handleEditLista = (lista) =>{
+        setListaEdit(lista);
+        setModal(true);
+    }
+
+    const handleEliminarLista = (listaElim) =>{
+        const listasAct = listas.filter(list => list.nombre !== listaElim.nombre);
+        setListas(listasAct);
     }
 
     const cambiarEstadoLista = (lista,producto) =>{
@@ -66,7 +76,7 @@ function App() {
                 {listas.length > 0 ? (
                     <>
                         {listas.map(lista => (
-                            <ItemLista key={lista.nombre} lista={lista} handleMostarLista={handleMostarLista}/>
+                            <ItemLista key={lista.nombre} lista={lista} handleMostarLista={handleMostarLista} handleEditLista={handleEditLista} handleEliminarLista={handleEliminarLista}/>
                         ))}
                     </>
                 ):
@@ -80,7 +90,7 @@ function App() {
                 
             </main>
 
-            <Modal open={modal} setOpen={setModal} listas={listas} setListas={setListas}/>
+            <Modal open={modal} setOpen={setModal} listas={listas} setListas={setListas} listaEdit={listaEdit} setListaEdit={setListaEdit}/>
             {lista?.nombre && ( 
                 <ModalLista open={modalLista} setOpen={setModalLista} lista={lista} cambiarEstadoLista={cambiarEstadoLista}/>
             )}
